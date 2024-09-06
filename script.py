@@ -38,10 +38,23 @@ def download_image(url, filename):
         file.write(response.content)
 
 def fetch_all_pages():
+    all_titles = []
     url = "https://tgstation13.org/wiki/api.php?action=query&list=allpages&format=json&aplimit=max"
-    response = requests.get(url)
-    data = response.json()
-    return [page['title'] for page in data['query']['allpages']]
+    continue_params = {}
+
+    while True:
+        response = requests.get(url, params=continue_params)
+        data = response.json()
+
+        all_titles.extend([page['title'] for page in data['query']['allpages']])
+
+        # Check if there are more pages to fetch
+        if 'continue' in data:
+            continue_params = data['continue']
+        else:
+            break
+
+    return all_titles
 
 def download_pages_and_revisions(titles):
     for title in titles:
