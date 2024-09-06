@@ -46,22 +46,40 @@ def fetch_all_pages():
 def download_pages_and_revisions(titles):
     for title in titles:
         sanitized_title = sanitize_filename(title)
-        # Fetch and save page content
-        page_content = fetch_page_content(title)
-        with open(os.path.join(pages_dir, f"{sanitized_title}.json"), 'w') as file:
-            json.dump(page_content, file, indent=4)
 
-        # Fetch and save revisions
-        revisions_data = fetch_revisions(title)
-        with open(os.path.join(revisions_dir, f"{sanitized_title}_revisions.json"), 'w') as file:
-            json.dump(revisions_data, file, indent=4)
+        # Check if page content exists
+        page_path = os.path.join(pages_dir, f"{sanitized_title}.json")
+        revision_path = os.path.join(revisions_dir, f"{sanitized_title}_revisions.json")
+
+        if os.path.exists(page_path):
+            print(f"Skipping page: {sanitized_title} (already exists)")
+        else:
+            print(f"Fetching page: {sanitized_title}")
+            page_content = fetch_page_content(title)
+            with open(page_path, 'w') as file:
+                json.dump(page_content, file, indent=4)
+
+        if os.path.exists(revision_path):
+            print(f"Skipping revisions: {sanitized_title} (already exists)")
+        else:
+            print(f"Fetching revisions: {sanitized_title}")
+            revisions_data = fetch_revisions(title)
+            with open(revision_path, 'w') as file:
+                json.dump(revisions_data, file, indent=4)
 
 def download_all_images():
     images_data = fetch_images()
     images = [image['url'] for image in images_data['query']['allimages']]
+    
     for image_url in images:
         img_name = sanitize_filename(image_url.split('/')[-1])
-        download_image(image_url, img_name)
+        image_path = os.path.join(images_dir, img_name)
+
+        if os.path.exists(image_path):
+            print(f"Skipping image: {img_name} (already exists)")
+        else:
+            print(f"Downloading image: {img_name}")
+            download_image(image_url, img_name)
 
 def create_xml_dump():
     root = ET.Element("MediaWikiDump")
