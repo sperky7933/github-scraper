@@ -27,10 +27,11 @@ def fetch_revisions(title):
     response = requests.get(url)
     return response.json()
 
-def fetch_images():
+def fetch_images(continue_params=None):
     url = "https://tgstation13.org/wiki/api.php?action=query&list=allimages&format=json&ailimit=max"
-    response = requests.get(url)
+    response = requests.get(url, params=continue_params)
     return response.json()
+
 
 def download_image(url, filename):
     response = requests.get(url)
@@ -81,18 +82,29 @@ def download_pages_and_revisions(titles):
                 json.dump(revisions_data, file, indent=4)
 
 def download_all_images():
-    images_data = fetch_images()
-    images = [image['url'] for image in images_data['query']['allimages']]
-    
-    for image_url in images:
-        img_name = sanitize_filename(image_url.split('/')[-1])
-        image_path = os.path.join(images_dir, img_name)
+    continue_params = {}
+    images_downloaded = 0
 
-        if os.path.exists(image_path):
-            print(f"Skipping image: {img_name} (already exists)")
+    while True:
+        images_data = fetch_images(continue_params)
+        images = [image['url'] for image in images_data['query']['allimages']]
+        
+        for image_url in images:
+            img_name = sanitize_filename(image_url.split('/')[-1])
+            image_path = os.path.join(images_dir, img_name)
+
+            if os.path.exists(image_path):
+                print(f"Skipping image: {img_name} (already exists)")
+            else:
+                print(f"Downloading image: {img_name}")
+                download_image(image_url, img_name)
+                images_downloaded += 1
+
+        # Check if there are more images to fetch
+        if 'continue' in images_data:
+            continue_params = images_data['continue']
         else:
-            print(f"Downloading image: {img_name}")
-            download_image(image_url, img_name)
+            break
 
 def create_xml_dump():
     root = ET.Element("MediaWikiDump")
