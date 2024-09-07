@@ -1,4 +1,4 @@
-All scripts made by me through ChatGPT are MIT. None of them were actually really made by me, I just got ChatGPT to make them and edited them a bit for them to work.
+All scripts made by me through ChatGPT are MIT. THe mediawiki ones are GPL and their license is included in the code. None of them were actually really made by me, I just got ChatGPT to make them and edited them a bit for them to work.
 
 The best way to run this script is to run Script.py, then gettitles.py. You can put all the titles in a wikimedia's https://tgstation13.org/wiki/Special:Export to make it easier, but to import images you'll need to run script.py.
 
